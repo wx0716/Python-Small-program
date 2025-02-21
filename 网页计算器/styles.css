@@ -1,0 +1,182 @@
+:root {
+    --bg-color: #f4f4f4;
+    --text-color: #333;
+    --calculator-bg: rgba(255, 255, 255, 0.9);
+    --button-bg: #f0f0f0;
+    --button-hover: #ddd;
+    --operator-bg: #ff9500;
+    --operator-hover: #e08900;
+    --equals-bg: #34c759;
+    --equals-hover: #2da94f;
+    --history-bg: rgba(240, 240, 240, 0.8);
+    --history-item-bg: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] {
+    --bg-color: #1e1e1e;
+    --text-color: #f4f4f4;
+    --calculator-bg: rgba(40, 40, 40, 0.9);
+    --button-bg: #333;
+    --button-hover: #444;
+    --operator-bg: #ff9500;
+    --operator-hover: #e08900;
+    --equals-bg: #34c759;
+    --equals-hover: #2da94f;
+    --history-bg: rgba(50, 50, 50, 0.8);
+    --history-item-bg: rgba(60, 60, 60, 0.9);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: var(--bg-color);
+    color: var(--text-color);
+    transition: background 0.3s, color 0.3s;
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.calculator {
+    background: var(--calculator-bg);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    backdrop-filter: blur(10px);
+}
+
+#display {
+    width: 100%;
+    height: 100px; /* 增大显示框高度 */
+    font-size: 40px; /* 增大显示框字体大小 */
+    text-align: right;
+    margin-bottom: 20px;
+    padding: 20px; /* 增大显示框内边距 */
+    box-sizing: border-box;
+    border: none;
+    border-radius: 15px; /* 增大显示框圆角 */
+    background: var(--button-bg);
+    color: var(--text-color);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+button {
+    padding: 25px;
+    font-size: 24px;
+    border: none;
+    border-radius: 15px;
+    background: var(--button-bg);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+button:hover {
+    background: var(--button-hover);
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.operator {
+    background: var(--operator-bg);
+    color: white;
+}
+
+.operator:hover {
+    background: var(--operator-hover);
+}
+
+.equals {
+    background: var(--equals-bg);
+    color: white;
+    grid-column: span 1;
+}
+
+.equals:hover {
+    background: var(--equals-hover);
+}
+
+.zero {
+    grid-column: span 2;
+}
+
+.history {
+    margin-top: 25px;
+    padding: 15px;
+    background: var(--history-bg);
+    border-radius: 15px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.history h3 {
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    color: var(--text-color);
+}
+
+#history-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#history-list li {
+    padding: 10px;
+    background: var(--history-item-bg);
+    margin-bottom: 8px;
+    border-radius: 10px;
+    font-size: 16px;
+    color: var(--text-color);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+    .calculator {
+        padding: 20px;
+        max-width: 90%;
+    }
+
+    #display {
+        height: 80px; /* 小屏幕上适当减小显示框高度 */
+        font-size: 32px; /* 小屏幕上适当减小字体大小 */
+        padding: 15px; /* 小屏幕上适当减小内边距 */
+    }
+
+    button {
+        padding: 20px;
+        font-size: 20px;
+    }
+
+    .history h3 {
+        font-size: 18px;
+    }
+
+    #history-list li {
+        font-size: 14px;
+    }
+}
