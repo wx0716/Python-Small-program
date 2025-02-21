@@ -8,3 +8,5 @@
 
 2. 天气查询：[Weather inquiry](Weather%20inquiry.py)
 
+3. 八大行星运行图[八大行星运行图](八大行星运行图.py)
+
