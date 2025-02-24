@@ -17,3 +17,4 @@
 11. [Linux系统更新脚本](update.sh)
 12. [vps简易测试脚本](vps_test.sh)
 13. [vps全面测试脚本](optimized_benchmark.sh)
+14. [MacOS-update](MacOS-update.sh)
