@@ -1,0 +1,37 @@
+.progress-bar {
+    transition: width 0.5s ease-in-out;
+}
+
+.card {
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+#progressBar {
+    background-color: #4e73df;
+}
+
+.btn-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.btn-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 15px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+}

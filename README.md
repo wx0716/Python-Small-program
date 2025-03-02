@@ -23,3 +23,4 @@
 17. [号码归属地查询](号码归属地查询.py)
 18. [体积转换](体积转换.py)
 19. [SpeedTest](speed-test.py)
+20. [图形化SpeedTest](/SpeedTest)
