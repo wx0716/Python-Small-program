@@ -245,6 +245,11 @@ generate_summary() {
     echo "完整日志请查看: $LOG_FILE" | tee -a "$LOG_FILE"
 }
 
+disk_speed_test() {
+    log "执行磁盘速度测试..."
+    dd if=/dev/zero of=/tmp/testfile bs=1g count=1 oflag=direct 2>&1 | tee -a "$LOG_FILE"
+}
+
 # 主函数
 main() {
     log "=== 开始系统维护 ==="
@@ -260,6 +265,7 @@ main() {
     monitor_performance
     clean_browser_caches
     generate_summary
+    disk_speed_test
 
     # 并行执行独立任务
     log "启动并行更新任务..."
