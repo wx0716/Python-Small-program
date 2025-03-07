@@ -7,8 +7,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="618c32d8-1f2d-4668-b057-1d76c2160aa6" name="更改" comment="更新日志：&#10;1:错误重试机制：使用run_with_retry函数对关键操作进行最多3次重试&#10;&#10;2:macOS系统更新：交互式询问是否安装系统更新&#10;&#10;3:Mac App Store更新：使用mas工具更新已安装的商店应用&#10;&#10;4:磁盘空间监控：在维护前后检查磁盘使用情况并给出警告&#10;&#10;5:配置文件备份：自动备份常用配置文件到带日期的目录&#10;&#10;6:临时文件清理：清理系统垃圾文件和日志&#10;&#10;7:安全更新检查：专门检查与安全相关的软件包更新&#10;&#10;8:系统通知：维护完成后发送桌面通知&#10;&#10;9:自动打开日志：维护完成后尝试用文本编辑器打开日志文件&#10;&#10;10:增强日志记录：记录更多操作细节和时间信息">
-      <change beforePath="$PROJECT_DIR$/MacOS-update.sh" beforeDir="false" afterPath="$PROJECT_DIR$/MacOS-update.sh" afterDir="false" />
+    <list default="true" id="618c32d8-1f2d-4668-b057-1d76c2160aa6" name="更改" comment="add 磁盘速度测试和网络性能测试">
+      <change afterPath="$PROJECT_DIR$/enhanced_setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -19,9 +20,9 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="JavaScript File" />
-        <option value="Python Script" />
         <option value="HTML File" />
         <option value="CSS File" />
+        <option value="Python Script" />
       </list>
     </option>
   </component>
@@ -69,52 +70,52 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "Python.BT- download.executor": "Run",
-    "Python.Calculator.executor": "Run",
-    "Python.Speed_Test_Pro.executor": "Run",
-    "Python.app.executor": "Run",
-    "Python.demo.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.scratch.executor": "Run",
-    "Python.speed-test.executor": "Run",
-    "Python.test.executor": "Run",
-    "Python.update.executor": "Run",
-    "Python.体积转换.executor": "Debug",
-    "Python.倒数日.executor": "Run",
-    "Python.可扩展版爬虫程序.executor": "Run",
-    "Python.号码归属地查询.executor": "Run",
-    "Python.基础爬虫程序.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/Users/wangxin/PycharmProjects/Python-Small-program",
-    "list.type.of.created.stylesheet": "CSS",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "aDefault",
-    "settings.editor.selected.configurable": "com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;Python.BT- download.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Calculator.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Speed_Test_Pro.executor&quot;: &quot;Run&quot;,
+    &quot;Python.app.executor&quot;: &quot;Run&quot;,
+    &quot;Python.demo.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.scratch.executor&quot;: &quot;Run&quot;,
+    &quot;Python.speed-test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.update.executor&quot;: &quot;Run&quot;,
+    &quot;Python.体积转换.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.倒数日.executor&quot;: &quot;Run&quot;,
+    &quot;Python.可扩展版爬虫程序.executor&quot;: &quot;Run&quot;,
+    &quot;Python.号码归属地查询.executor&quot;: &quot;Run&quot;,
+    &quot;Python.基础爬虫程序.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/wangxin/PycharmProjects/Python-Small-program&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;aDefault&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.intellij.pycharm.community.ide.impl.configuration.PythonContentEntriesConfigurable&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   },
-  "keyToStringList": {
-    "DatabaseDriversLRU": [
-      "mysql"
+  &quot;keyToStringList&quot;: {
+    &quot;DatabaseDriversLRU&quot;: [
+      &quot;mysql&quot;
     ],
-    "com.intellij.ide.scratch.LRUPopupBuilder$1/": [
-      "SQLite"
+    &quot;com.intellij.ide.scratch.LRUPopupBuilder$1/&quot;: [
+      &quot;SQLite&quot;
     ],
-    "com.intellij.ide.scratch.ScratchImplUtil$2/新建临时文件": [
-      "Python"
+    &quot;com.intellij.ide.scratch.ScratchImplUtil$2/新建临时文件&quot;: [
+      &quot;Python&quot;
     ]
   }
-}]]></component>
-  <component name="RunManager" selected="Python.app">
+}</component>
+  <component name="RunManager" selected="Python.enhanced_setup">
     <configuration name="可扩展版爬虫程序" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PythonProject" />
       <option name="ENV_FILES" value="" />
@@ -184,7 +185,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="app" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+    <configuration name="enhanced_setup" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="PythonProject" />
       <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -193,12 +194,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/SpeedTest" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/SpeedTest/app.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/enhanced_setup.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -255,11 +256,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.app" />
-        <item itemvalue="Python.Speed_Test_Pro" />
-        <item itemvalue="Python.speed-test" />
-        <item itemvalue="Python.可扩展版爬虫程序" />
-        <item itemvalue="Python.update" />
+        <item itemvalue="Python.enhanced_setup" />
       </list>
     </recent_temporary>
   </component>
@@ -284,7 +281,10 @@
       <workItem from="1740499991054" duration="554000" />
       <workItem from="1740500550059" duration="7069000" />
       <workItem from="1740508677608" duration="70000" />
-      <workItem from="1740851045784" duration="6513000" />
+      <workItem from="1740851045784" duration="7883000" />
+      <workItem from="1741151457658" duration="458000" />
+      <workItem from="1741151933086" duration="16000" />
+      <workItem from="1741371857942" duration="801000" />
     </task>
     <task id="LOCAL-00001" summary="update README.md">
       <option name="closed" value="true" />
@@ -526,7 +526,15 @@
       <option name="project" value="LOCAL" />
       <updated>1740888493568</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="add 磁盘速度测试和网络性能测试">
+      <option name="closed" value="true" />
+      <created>1740889017770</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1740889017770</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -550,7 +558,8 @@
     <MESSAGE value="update README.md" />
     <MESSAGE value="Update" />
     <MESSAGE value="更新日志：&#10;1:错误重试机制：使用run_with_retry函数对关键操作进行最多3次重试&#10;&#10;2:macOS系统更新：交互式询问是否安装系统更新&#10;&#10;3:Mac App Store更新：使用mas工具更新已安装的商店应用&#10;&#10;4:磁盘空间监控：在维护前后检查磁盘使用情况并给出警告&#10;&#10;5:配置文件备份：自动备份常用配置文件到带日期的目录&#10;&#10;6:临时文件清理：清理系统垃圾文件和日志&#10;&#10;7:安全更新检查：专门检查与安全相关的软件包更新&#10;&#10;8:系统通知：维护完成后发送桌面通知&#10;&#10;9:自动打开日志：维护完成后尝试用文本编辑器打开日志文件&#10;&#10;10:增强日志记录：记录更多操作细节和时间信息" />
-    <option name="LAST_COMMIT_MESSAGE" value="更新日志：&#10;1:错误重试机制：使用run_with_retry函数对关键操作进行最多3次重试&#10;&#10;2:macOS系统更新：交互式询问是否安装系统更新&#10;&#10;3:Mac App Store更新：使用mas工具更新已安装的商店应用&#10;&#10;4:磁盘空间监控：在维护前后检查磁盘使用情况并给出警告&#10;&#10;5:配置文件备份：自动备份常用配置文件到带日期的目录&#10;&#10;6:临时文件清理：清理系统垃圾文件和日志&#10;&#10;7:安全更新检查：专门检查与安全相关的软件包更新&#10;&#10;8:系统通知：维护完成后发送桌面通知&#10;&#10;9:自动打开日志：维护完成后尝试用文本编辑器打开日志文件&#10;&#10;10:增强日志记录：记录更多操作细节和时间信息" />
+    <MESSAGE value="add 磁盘速度测试和网络性能测试" />
+    <option name="LAST_COMMIT_MESSAGE" value="add 磁盘速度测试和网络性能测试" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Python_Small_program$update.coverage" NAME="update 覆盖结果" MODIFIED="1740673660020" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

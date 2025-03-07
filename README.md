@@ -24,3 +24,4 @@
 18. [体积转换](体积转换.py)
 19. [SpeedTest](speed-test.py)
 20. [图形化SpeedTest](/SpeedTest)
+21. [服务器一键搭建Python环境脚本](enhanced_setup.py)
