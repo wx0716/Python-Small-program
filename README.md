@@ -25,3 +25,4 @@
 19. [SpeedTest](speed-test.py)
 20. [图形化SpeedTest](/SpeedTest)
 21. [服务器一键搭建Python环境脚本](enhanced_setup.py)
+22. [BMI测算程序](BMI.py)
