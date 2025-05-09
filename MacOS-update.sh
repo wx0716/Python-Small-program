@@ -1,297 +1,311 @@
-#!/bin/bash
+# 配置区
+LOG_FILE="${HOME}/system_maintenance.log"
+TIMESTAMP=$(date "+%Y-%m-%d %H:%M:%S")
 
-# 日志文件路径
-LOG_FILE="/tmp/system_update_$(date +%Y%m%d_%H%M%S).log"
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # 重置颜色
 
-# 函数：记录日志
-log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+# 初始化日志
+echo "=== 维护开始于 ${TIMESTAMP} ===" | tee -a "${LOG_FILE}"
+
+# 函数定义
+show_help() {
+    echo "用法: $0 [选项]"
+    echo "选项:"
+    echo "  --all       执行完整维护流程"
+    echo "  --update    仅执行更新操作"
+    echo "  --clean     仅执行清理操作"
+    echo "  --security  仅执行安全检查"
+    echo "  --help      显示帮助信息"
 }
 
-# 函数：检查命令是否存在
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
+header() {
+    echo -e "\n${YELLOW}▶ $1${NC}" | tee -a "${LOG_FILE}"
 }
 
-# 函数：带重试的命令执行
-run_with_retry() {
-    local cmd="$1"
-    local max_retries=${2:-3}
-    local retry_count=0
+success() {
+    echo -e "${GREEN}✓ $1${NC}" | tee -a "${LOG_FILE}"
+}
 
-    while [ $retry_count -lt $max_retries ]; do
-        if eval "$cmd"; then
-            return 0
+warning() {
+    echo -e "${YELLOW}⚠ $1${NC}" | tee -a "${LOG_FILE}"
+}
+
+error() {
+    echo -e "${RED}✗ $1${NC}" | tee -a "${LOG_FILE}"
+}
+
+# 安装Homebrew
+install_homebrew() {
+    header "尝试安装Homebrew"
+    
+    if [ -n "$CI" ]; then
+        warning "CI环境跳过交互式安装"
+        return 1
+    fi
+
+    echo -e "${YELLOW}请根据提示完成Homebrew安装（需要管理员权限）${NC}"
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    
+    # 配置环境变量
+    if [[ -x /opt/homebrew/bin/brew ]]; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
+    elif [[ -x /usr/local/bin/brew ]]; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
+    
+    if command -v brew &> /dev/null; then
+        success "Homebrew安装成功"
+        return 0
+    else
+        error "Homebrew安装失败，请手动安装"
+        return 1
+    fi
+}
+
+# 安装Python
+install_python() {
+    header "尝试通过Homebrew安装Python"
+    
+    if ! command -v brew &> /dev/null; then
+        error "Homebrew不可用，无法安装Python"
+        return 1
+    fi
+
+    if brew install python@3.11 2>&1 | tee -a "${LOG_FILE}"; then
+        # 配置环境变量
+        export PATH="/usr/local/opt/python@3.11/bin:$PATH"
+        echo 'export PATH="/usr/local/opt/python@3.11/bin:$PATH"' >> ~/.zshrc
+        success "Python安装成功"
+        
+        if ! command -v python3 &> /dev/null; then
+            error "Python二进制文件未找到"
+            return 1
+        fi
+        return 0
+    else
+        error "Python安装失败"
+        return 1
+    fi
+}
+
+# 系统更新
+system_update() {
+    header "系统更新检查"
+    if softwareupdate -l 2>&1 | tee -a "${LOG_FILE}"; then
+        success "系统更新检查完成"
+    else
+        error "系统更新检查失败"
+        return 1
+    fi
+}
+
+# Homebrew维护
+brew_maintenance() {
+    header "Homebrew 维护"
+    
+    if ! command -v brew &> /dev/null; then
+        warning "Homebrew未安装"
+        if install_homebrew; then
+            success "Homebrew已成功安装"
         else
-            ((retry_count++))
-            log "命令执行失败，正在重试 ($retry_count/$max_retries)..."
-            sleep $((retry_count * 2))
+            error "Homebrew安装失败，跳过维护"
+            return 1
         fi
-    done
-    log "命令重试 $max_retries 次后仍然失败"
-    return 1
-}
-
-# 检查并安装缺失的命令
-install_missing_commands() {
-    local required_commands=(brew pip3)
-    local missing_commands=()
-
-    for cmd in "${required_commands[@]}"; do
-        if ! command_exists "$cmd"; then
-            missing_commands+=("$cmd")
-        fi
-    done
-
-    if [ ${#missing_commands[@]} -gt 0 ]; then
-        log "以下命令未安装: ${missing_commands[*]}"
-        log "请先安装这些命令后再运行脚本。"
-        exit 1
     fi
-}
-
-# 更新 Homebrew
-update_brew() {
-    log "正在更新 Homebrew..."
-    if run_with_retry "brew update"; then
-        log "Homebrew 更新成功。"
-    else
-        log "Homebrew 更新失败。"
-        exit 1
+    
+    echo "→ 更新公式列表..." | tee -a "${LOG_FILE}"
+    if ! brew update 2>&1 | tee -a "${LOG_FILE}"; then
+        error "brew 更新失败，中止Homebrew维护。"
+        return 1
     fi
+    
+    echo "→ 升级软件包..." | tee -a "${LOG_FILE}"
+    brew upgrade 2>&1 | tee -a "${LOG_FILE}"
+    
+    echo "→ 升级 GUI 应用..." | tee -a "${LOG_FILE}"
+    brew upgrade --cask 2>&1 | tee -a "${LOG_FILE}"
+    
+    echo "→ 执行深度清理..." | tee -a "${LOG_FILE}"
+    brew cleanup --prune=all 2>&1 | tee -a "${LOG_FILE}"
+    success "Homebrew 维护完成"
 }
 
-# 升级 Homebrew 包
-upgrade_brew() {
-    log "正在升级 Homebrew 包..."
-    if run_with_retry "brew upgrade"; then
-        log "Homebrew 包升级成功。"
-    else
-        log "Homebrew 包升级失败。"
-        exit 1
-    fi
-}
-
-# 清理 Homebrew
-cleanup_brew() {
-    log "正在执行 Homebrew 清理..."
-    brew cleanup -s 2>/dev/null
-    brew autoremove 2>/dev/null
-    log "Homebrew 清理完成"
-}
-
-# 更新 pip3
-update_pip() {
-    log "正在更新 pip3..."
-    if run_with_retry "pip3 install --upgrade pip"; then
-        log "pip3 更新成功。"
-    else
-        log "pip3 更新失败。"
-        exit 1
-    fi
-}
-
-# 更新 Mac App Store 应用
-update_mas_apps() {
-    if command_exists mas; then
-        log "正在检查 Mac App Store 更新..."
-        mas outdated | while read -r app; do
-            app_id=$(echo "$app" | awk '{print $1}')
-            app_name=$(echo "$app" | awk '{for(i=2;i<NF;i++) printf $i" "; print $NF}')
-            log "正在更新 $app_name..."
-            mas upgrade "$app_id"
-        done
-        log "Mac App Store 应用更新完成"
-    else
-        log "mas 未安装，跳过 Mac App Store 更新"
-        log "可通过以下命令安装mas: brew install mas"
-    fi
-}
-
-# 检查并安装 macOS 更新
-update_macos() {
-    log "正在检查 macOS 系统更新..."
-    updates=$(softwareupdate -l 2>&1)
-
-    if echo "$updates" | grep -q "No new software available"; then
-        log "系统已经是最新版本"
-    else
-        log "发现可用系统更新:"
-        echo "$updates" | grep -iB 1 "restart"
-        read -rp "是否要安装系统更新？(y/n) " choice
-        if [[ "$choice" =~ [Yy] ]]; then
-            log "正在安装系统更新..."
-            sudo softwareupdate -i -a
-            log "系统更新安装完成，可能需要重启计算机"
+# Python维护
+pip_maintenance() {
+    header "Python 环境维护"
+    
+    if ! command -v python3 &> /dev/null; then
+        warning "Python 3未安装"
+        if install_python; then
+            success "Python已成功安装"
         else
-            log "已跳过系统更新"
+            error "Python安装失败，跳过维护"
+            return 1
         fi
     fi
-}
 
-# 磁盘空间检查
-check_disk_space() {
-    log "正在检查磁盘空间..."
-    local threshold=90
-    local disk_usage=$(df / | tail -1 | awk '{print $5}' | tr -d '%')
-
-    if [ "$disk_usage" -gt "$threshold" ]; then
-        log "警告：磁盘使用率超过 ${threshold}%!"
-        log "建议清理磁盘空间"
-    else
-        log "磁盘空间正常 (使用率: ${disk_usage}%)"
+    if ! command -v pip3 &> /dev/null; then
+        error "pip3不可用，尝试修复..."
+        if python3 -m ensurepip --upgrade 2>&1 | tee -a "${LOG_FILE}"; then
+            success "pip修复成功"
+        else
+            error "pip修复失败"
+            return 1
+        fi
     fi
+    
+    echo "→ 升级 pip 工具链..." | tee -a "${LOG_FILE}"
+    pip3 install --upgrade pip setuptools wheel 2>&1 | tee -a "${LOG_FILE}"
+    
+    echo "→ 批量更新 Python 包..." | tee -a "${LOG_FILE}"
+    outdated_packages=$(pip3 list --outdated --format=freeze | cut -d= -f1)
+    if [ -n "$outdated_packages" ]; then
+        echo "检测到可升级的包: $outdated_packages" | tee -a "${LOG_FILE}"
+        pip3 install -U $outdated_packages 2>&1 | tee -a "${LOG_FILE}"
+    else
+        success "所有 Python 包均为最新版本"
+    fi
+    
+    success "Python 维护完成"
 }
 
-# 配置文件备份
-backup_configs() {
-    local backup_dir="$HOME/ConfigBackup_$(date +%Y%m%d)"
-    local config_files=(
-        ~/.bash_profile
-        ~/.zshrc
-        ~/.ssh/config
-        ~/.vimrc
-    )
+# 系统清理
+system_cleanup() {
+    header "系统清理"
+    
+    echo "→ 清理用户缓存..." | tee -a "${LOG_FILE}"
+    if [ -d "${HOME}/Library/Caches" ]; then
+        rm -rfv ~/Library/Caches/* 2>&1 | tee -a "${LOG_FILE}"
+    else
+        warning "用户缓存目录不存在，跳过清理。"
+    fi
+    
+    echo "→ 清空下载目录30天前的文件..." | tee -a "${LOG_FILE}"
+    if [ -d "${HOME}/Downloads" ]; then
+        find ~/Downloads -type f -mtime +30 -exec rm -v {} \; 2>&1 | tee -a "${LOG_FILE}"
+    else
+        warning "下载目录不存在，跳过清理。"
+    fi
+    
+    echo "→ 清空废纸篓..." | tee -a "${LOG_FILE}"
+    if osascript -e 'tell app "Finder" to empty trash' 2>&1 | tee -a "${LOG_FILE}"; then
+        success "废纸篓已清空"
+    else
+        error "清空废纸篓失败"
+    fi
+    
+    success "系统清理完成"
+}
 
-    log "正在备份配置文件..."
-    mkdir -p "$backup_dir"
-
-    for file in "${config_files[@]}"; do
-        if [ -f "$file" ]; then
-            cp -v "$file" "$backup_dir" | tee -a "$LOG_FILE"
+# 安全检查
+security_check() {
+    header "安全检查"
+    
+    important_dirs=("/usr/local" "/usr/local/bin" "/usr/local/etc" "/Library/LaunchDaemons")
+    for dir in "${important_dirs[@]}"; do
+        if [ -d "$dir" ]; then
+            ls -ld "$dir" | tee -a "${LOG_FILE}"
+            if [ -w "$dir" ]; then
+                warning "目录可写: $dir"
+            fi
+        else
+            warning "目录不存在: $dir"
         fi
     done
-
-    log "配置文件备份至: $backup_dir"
-}
-
-# 清理临时文件
-clean_temporary_files() {
-    log "正在清理临时文件..."
-    sudo rm -rf /Volumes/*/.Trashes 2>/dev/null
-    sudo rm -rf ~/.Trash/* 2>/dev/null
-    sudo rm -rf /private/var/log/asl/*.asl 2>/dev/null
-    log "临时文件清理完成"
-}
-
-# 发送系统通知
-send_notification() {
-    local message="系统维护完成于 $(date +%H:%M:%S)"
-    osascript -e "display notification \"$message\" with title \"系统维护\""
-}
-
-# 安全更新检查
-check_security_updates() {
-    log "正在检查安全更新..."
-    brew update &>/dev/null
-    local outdated=$(brew outdated --formula | grep -iE 'security|openssl|openssh')
-
-    if [ -n "$outdated" ]; then
-        log "发现以下安全相关更新:"
-        echo "$outdated" | tee -a "$LOG_FILE"
-        log "建议立即更新这些软件"
+    
+    echo "→ 检查Python依赖漏洞..." | tee -a "${LOG_FILE}"
+    
+    if ! command -v safety &> /dev/null; then
+        warning "safety 未安装，尝试自动安装..."
+        
+        if ! command -v pip3 &> /dev/null; then
+            error "pip3 不可用，无法安装 safety"
+            return 1
+        fi
+        
+        install_cmd="pip3 install safety"
+        echo "→ 执行安装命令: $install_cmd" | tee -a "${LOG_FILE}"
+        if $install_cmd 2>&1 | tee -a "${LOG_FILE}"; then
+            success "safety 安装成功"
+            
+            if [[ ! "$PATH" == *"$HOME/.local/bin"* ]]; then
+                export PATH="$HOME/.local/bin:$PATH"
+                echo "→ 临时添加用户 bin 目录到 PATH" | tee -a "${LOG_FILE}"
+            fi
+            
+            if ! command -v safety &> /dev/null; then
+                error "safety 安装后仍不可用，请尝试："
+                echo "1. 重启终端会话" | tee -a "${LOG_FILE}"
+                echo "2. 手动运行: source ~/.zshrc" | tee -a "${LOG_FILE}"
+                return 1
+            fi
+        else
+            error "safety 安装失败"
+            echo "建议解决方法：" | tee -a "${LOG_FILE}"
+            echo "1. 检查网络连接" | tee -a "${LOG_FILE}"
+            echo "2. 尝试管理员安装: sudo pip3 install safety" | tee -a "${LOG_FILE}"
+            return 1
+        fi
+    fi
+    
+    echo "→ 正在扫描Python依赖漏洞..." | tee -a "${LOG_FILE}"
+    if safety check --full-report 2>&1 | tee -a "${LOG_FILE}"; then
+        success "未发现已知漏洞"
     else
-        log "未发现待处理的安全更新"
+        error "发现安全漏洞或检查失败"
+        return 1
     fi
+    
+    success "安全检查完成"
 }
 
-check_internet_connection() {
-    log "检查网络连接..."
-    if ping -c 3 8.8.8.8 &> /dev/null; then
-        log "网络连接正常"
-    else
-        log "网络连接失败，请检查网络设置"
-        exit 1
-    fi
-}
+# 主逻辑
+if [ $# -eq 0 ]; then
+    show_help
+    exit 1
+fi
 
-update_npm_packages() {
-    if command_exists npm; then
-        log "更新全局npm包..."
-        npm outdated -g --parseable | cut -d: -f4 | xargs npm install -g | tee -a "$LOG_FILE"
-    fi
-}
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --all)
+            system_update
+            brew_maintenance
+            pip_maintenance
+            system_cleanup
+            security_check
+            shift
+            ;;
+        --update)
+            system_update
+            brew_maintenance
+            pip_maintenance
+            shift
+            ;;
+        --clean)
+            system_cleanup
+            shift
+            ;;
+        --security)
+            security_check
+            shift
+            ;;
+        --help)
+            show_help
+            exit 0
+            ;;
+        *)
+            error "未知选项: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
 
-check_ssh_keys() {
-    log "检查SSH密钥权限..."
-    find ~/.ssh -type f -exec ls -l {} \; | tee -a "$LOG_FILE"
-
-    # 检查是否存在未加密的私钥
-    log "检查未加密的私钥..."
-    grep -L ENCRYPTED ~/.ssh/id_* | tee -a "$LOG_FILE"
-}
-
-monitor_performance() {
-    log "记录当前资源使用情况："
-    top -l 1 -s 0 | head -n 10 | tee -a "$LOG_FILE"
-    log "记录内存使用情况："
-    vm_stat | tee -a "$LOG_FILE"
-}
-
-clean_browser_caches() {
-    log "清理浏览器缓存..."
-    # Chrome
-    rm -rf ~/Library/Caches/Google/Chrome/* 2>/dev/null
-    # Firefox
-    rm -rf ~/Library/Caches/Firefox/* 2>/dev/null
-    # Safari
-    rm -rf ~/Library/Caches/com.apple.Safari/* 2>/dev/null
-}
-
-generate_summary() {
-    log "生成维护摘要..."
-    echo -e "\n=== 维护摘要 ===" | tee -a "$LOG_FILE"
-    grep -E '成功|失败|警告|建议' "$LOG_FILE" | tee -a "$LOG_FILE"
-    echo "完整日志请查看: $LOG_FILE" | tee -a "$LOG_FILE"
-}
-
-disk_speed_test() {
-    log "执行磁盘速度测试..."
-    dd if=/dev/zero of=/tmp/testfile bs=1g count=1 oflag=direct 2>&1 | tee -a "$LOG_FILE"
-}
-
-# 主函数
-main() {
-    log "=== 开始系统维护 ==="
-    log "维护日志文件: $LOG_FILE"
-
-    # 初始检查
-    install_missing_commands
-    check_disk_space
-    backup_configs
-    check_internet_connection
-    update_npm_packages
-    check_ssh_keys
-    monitor_performance
-    clean_browser_caches
-    generate_summary
-    disk_speed_test
-
-    # 并行执行独立任务
-    log "启动并行更新任务..."
-    (update_brew) &
-    (update_pip) &
-    (update_mas_apps) &
-    wait
-    log "并行更新任务完成"
-
-    # 顺序执行依赖任务
-    upgrade_brew
-    cleanup_brew
-    check_security_updates
-    update_macos
-    clean_temporary_files
-
-    # 最终检查
-    check_disk_space
-    send_notification
-    log "=== 系统维护完成 ==="
-
-    # 打开日志文件
-    open -a TextEdit "$LOG_FILE" 2>/dev/null || echo "可以使用以下命令查看日志: less $LOG_FILE"
-}
-
-
-
-# 执行主函数
-main
+# 收尾工作
+echo -e "\n${GREEN}=== 维护完成 耗时: $SECONDS 秒 ===${NC}" | tee -a "${LOG_FILE}"
+exit 0
